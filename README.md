@@ -304,6 +304,20 @@ Set `PORTLESS_TAILSCALE=1` in your shell profile or `.env` to share every app by
 
 Requires the Tailscale CLI to be installed and connected (`tailscale up`).
 
+## NetBird sharing
+
+Share your dev server via the [NetBird](https://netbird.io) reverse proxy:
+
+```bash
+portless myapp --netbird next dev
+# -> https://myapp.localhost                       (local)
+# -> https://myapp-<random>.proxy.<your-cluster>   (NetBird)
+```
+
+Portless runs `netbird expose` in the background, derives the service name from the app name, and stops the exposure when the app exits. Set `PORTLESS_NETBIRD=1` in your shell profile or `.env` to share every app by default. `portless list` shows the NetBird URL alongside the local URL.
+
+Requires the NetBird CLI to be installed and connected (`netbird up`). See [Expose from CLI](https://docs.netbird.io/manage/reverse-proxy/expose-from-cli) for setup details.
+
 ## Commands
 
 ```bash
@@ -351,6 +365,7 @@ portless proxy stop              # Stop the proxy
 --app-port <number>              Use a fixed port for the app (skip auto-assignment)
 --tailscale                      Share the app on your Tailscale network (tailnet)
 --funnel                         Share the app publicly via Tailscale Funnel
+--netbird                        Share the app via NetBird reverse proxy
 --force                          Kill the existing process and take over its route
 --name <name>                    Use <name> as the app name
 ```
@@ -368,6 +383,7 @@ PORTLESS_WILDCARD=1              Allow unregistered subdomains to fall back to p
 PORTLESS_SYNC_HOSTS=0            Disable auto-sync of /etc/hosts (on by default)
 PORTLESS_TAILSCALE=1             Share apps on your Tailscale network (same as --tailscale)
 PORTLESS_FUNNEL=1                Share apps publicly via Tailscale Funnel (same as --funnel)
+PORTLESS_NETBIRD=1               Share apps via NetBird reverse proxy (same as --netbird)
 PORTLESS_STATE_DIR=<path>        Override the state directory
 
 # Injected into child processes
@@ -375,6 +391,7 @@ PORT                             Ephemeral port the child should listen on
 HOST                             Usually 127.0.0.1 (omitted for Expo in LAN mode)
 PORTLESS_URL                     Public URL (e.g. https://myapp.localhost)
 PORTLESS_TAILSCALE_URL           Tailscale URL of the app (when --tailscale is active)
+PORTLESS_NETBIRD_URL             NetBird URL of the app (when --netbird is active)
 NODE_EXTRA_CA_CERTS              Path to the portless CA (when HTTPS is active)
 ```
 
@@ -456,3 +473,4 @@ pnpm format           # Format all files with Prettier
 - Node.js 20+
 - macOS, Linux, or Windows
 - Tailscale CLI (optional, for `--tailscale` and `--funnel`)
+- NetBird CLI (optional, for `--netbird`)

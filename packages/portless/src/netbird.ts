@@ -213,24 +213,28 @@ export function startExpose(
       fn();
     };
 
+    const tryResolve = () => {
+      const info = parseExposeInfo(stdoutBuf + "\n" + stderrBuf);
+      if (!info) return;
+      settle(() =>
+        resolve({
+          info,
+          process: child,
+          stop: () => {
+            child.kill("SIGTERM");
+          },
+        })
+      );
+    };
+
     child.stdout?.on("data", (chunk) => {
       stdoutBuf += chunk.toString();
-      const info = parseExposeInfo(stdoutBuf);
-      if (info) {
-        settle(() =>
-          resolve({
-            info,
-            process: child,
-            stop: () => {
-              child.kill("SIGTERM");
-            },
-          })
-        );
-      }
+      tryResolve();
     });
 
     child.stderr?.on("data", (chunk) => {
       stderrBuf += chunk.toString();
+      tryResolve();
     });
 
     child.on("error", (err) => {

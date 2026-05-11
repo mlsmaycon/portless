@@ -201,6 +201,14 @@ describe("netbird", () => {
       expect(calls[0]).toEqual(["expose", "--with-name-prefix", "myapp", "8080"]);
     });
 
+    it("resolves when the URL block is printed on stderr (netbird's real behavior)", async () => {
+      const fake = new FakeProcess();
+      const promise = startExpose(8080, { spawner: () => fake });
+      fake.emitStderr(SUCCESS_OUTPUT);
+      const handle = await promise;
+      expect(handle.info.url).toBe("https://myapp-a1b2c3.proxy.example.com");
+    });
+
     it("stop() sends SIGTERM to the child", async () => {
       const fake = new FakeProcess();
       const promise = startExpose(8080, { spawner: () => fake });

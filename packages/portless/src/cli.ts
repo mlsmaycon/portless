@@ -1210,7 +1210,11 @@ async function runApp(
   const basename = path.basename(commandArgs[0]);
   const isExpo = basename === "expo";
   const isExpoLan = isExpo && (lanMode || isLanEnvEnabled());
-  const hostBind = isExpoLan ? undefined : "127.0.0.1";
+  // With --netbird, the local end of the tunnel dials the peer's NetBird
+  // WireGuard IP (not 127.0.0.1), so the app must bind to all interfaces
+  // for netbird expose to reach it. Same idea as --lan, applied to the app
+  // bind instead of the proxy bind.
+  const hostBind = isExpoLan ? undefined : wantsNetbird ? "0.0.0.0" : "127.0.0.1";
 
   // Ensure PORTLESS_LAN is propagated to child processes when the proxy
   // was started with --lan separately and discovered from the state marker,
@@ -1650,7 +1654,7 @@ ${colors.bold("Environment variables:")}
 
 ${colors.bold("Child process environment:")}
   PORT                          Ephemeral port the child should listen on
-  HOST                          Usually 127.0.0.1 (omitted for Expo in LAN mode)
+  HOST                          Usually 127.0.0.1 (0.0.0.0 with --netbird, omitted for Expo in LAN mode)
   PORTLESS_URL                  Public URL of the app (e.g. https://myapp.localhost)
   PORTLESS_LAN                  Set to 1 when proxy is in LAN mode
   PORTLESS_TAILSCALE_URL        Tailscale URL of the app (when --tailscale is active)
